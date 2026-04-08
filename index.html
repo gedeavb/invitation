@@ -591,7 +591,7 @@
   </section> -->
 
   <!-- RSVP — black 80% -->
-  <section id="rsvp" class="sec-offwhite reveal">
+  <!-- <section id="rsvp" class="sec-offwhite reveal">
     <span class="section-tag">Join With Us</span>
     <h2 class="section-title">Ucapan</h2>
     <p class="section-desc">Dimohon untuk mengisi konfirmasi kehadiran dan kirimkan ucapan terbaik Anda.</p>
@@ -609,7 +609,7 @@
           <button type="button" class="att-btn" onclick="setAttendance('Mungkin',this)">? Mungkin</button>
         </div>
         <input type="hidden" id="attendance">
-      </div>
+      </div> -->
       <!-- <div class="form-group">
         <label class="form-label" for="guests">Jumlah Tamu</label>
         <select class="form-input form-select" id="guests">
@@ -619,22 +619,22 @@
           <option value="4">4+ Orang</option>
         </select>
       </div> -->
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label class="form-label" for="message">Ucapan &amp; Doa *</label>
         <textarea class="form-input" id="message" rows="4" placeholder="Tulis ucapan terbaik Anda..." required minlength="5" style="resize:vertical"></textarea>
-      </div>
+      </div> -->
 
       <!-- Google reCAPTCHA v2 -->
-      <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" data-theme="dark"></div>
+      <!-- <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" data-theme="dark"></div>
       <p class="rcnote">* Test Key (demo). Ganti dengan Site Key asli dari <a href="https://www.google.com/recaptcha/admin" target="_blank">Google reCAPTCHA Console</a>.</p>
 
       <button type="submit" class="submit-btn">✦ Kirim Ucapan ✦</button>
       <div class="success-msg" id="success-msg">❧ Terima kasih atas ucapan dan konfirmasi kehadiran Anda! ❧</div>
     </form>
-  </section>
+  </section> -->
 
   <!-- WISHES — light -->
-  <section id="wishes" class="sec-black reveal">
+  <!-- <section id="wishes" class="sec-black reveal">
     <span class="section-tag">Give Your Wishes</span>
     <h2 class="section-title">Ucapan Tamu</h2>
     <div class="wishes-count" id="wishes-count">
@@ -643,10 +643,10 @@
       <div><strong id="count-mungkin">0</strong><span>Masih Ragu</span></div>
     </div>
     <div class="wishes-list" id="wishes-list"></div>
-  </section>
+  </section> -->
 
   <!-- GIFT — black 70% -->
-  <section id="gift" class="sec-offwhite reveal">
+  <!-- <section id="gift" class="sec-offwhite reveal">
     <span class="section-tag">Wedding Gift</span>
     <h2 class="section-title">Hadiah Pernikahan</h2>
     <p class="gift-desc">Kehadiran dan doa Anda adalah hadiah terindah. Namun jika ingin memberikan tanda kasih, silakan melalui:</p>
@@ -666,7 +666,7 @@
       </div>
       <button class="copy-btn" onclick="copyText('0987654321',this)">Salin</button>
     </div>
-  </section>
+  </section> -->
 
   <!-- PROTOCOL — off-white -->
   <!-- <section id="protocol" class="sec-offwhite reveal">
@@ -700,8 +700,8 @@
 
 <script>
   // ── CONFIG SUPABASE ──────────────────────────────
-  const SUPABASE_URL = 'https://XXXX.supabase.co';   // ganti
-  const SUPABASE_KEY = 'ANON_PUBLIC_KEY_KAMU';        // ganti
+  const SUPABASE_URL = 'https://gxkrzipqcshmgyccgqcm.supabase.co';   // ganti
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4a3J6aXBxY3NobWd5Y2NncWNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NTMwMzUsImV4cCI6MjA5MTIyOTAzNX0.NxgZbQpjdVDJ-1rLoojkYs_g_Dtsb396K7_cjdRACt4';        // ganti
 
   const headers = {
     'Content-Type':  'application/json',
