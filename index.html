@@ -693,7 +693,7 @@
 
 <!-- Music -->
 <button id="music-btn" onclick="toggleMusic()" title="Musik">♪</button>
-<audio id="bg-music" loop>
+<audio id="bg-music" loop preload="auto">
   <source src="https://res.cloudinary.com/da2zkkh3h/video/upload/v1775666235/BONA_ALIT_KANG_CING_WIE_-_MADE_GAMELAN_pbfdgk.mp3" type="audio/mpeg">
 </audio>
 <div id="toast"></div>
@@ -786,14 +786,29 @@
 
   // ── OPEN INVITATION ──────────────────────────────
   function openInvitation() {
-    document.getElementById('cover').classList.add('hidden');
-    document.getElementById('main').classList.add('visible');
-    const m = document.getElementById('bg-music');
-    m.volume = .35;
-    m.play().then(() => { document.getElementById('music-btn').classList.add('playing'); musicPlaying = true; }).catch(() => {});
-    setTimeout(revealAll, 300);
-    fetchWishes();
-  }
+  document.getElementById('cover').classList.add('hidden');
+  document.getElementById('main').classList.add('visible');
+  
+  const m = document.getElementById('bg-music');
+  const b = document.getElementById('music-btn');
+  
+  m.volume = 0.35; // Catatan: iPhone/iOS sering mengabaikan script volume ini
+  
+  // Memutar musik
+  m.play().then(() => { 
+    b.classList.add('playing'); 
+    b.textContent = '⏸'; // Ubah ikon menjadi pause
+    musicPlaying = true; 
+  }).catch((error) => {
+    // Memunculkan pesan error di Console (tekan F12) jika gagal
+    console.error("Musik gagal diputar otomatis:", error);
+    b.textContent = '♪'; 
+    musicPlaying = false;
+  });
+
+  setTimeout(revealAll, 300);
+  fetchWishes();
+}
 
   // ── COUNTDOWN ────────────────────────────────────
   const wedding = new Date('2026-04-15T10:00:00');
@@ -811,12 +826,24 @@
   setInterval(tick, 1000); tick();
 
   // ── MUSIC ────────────────────────────────────────
-  let musicPlaying = false;
-  function toggleMusic() {
-    const m = document.getElementById('bg-music'), b = document.getElementById('music-btn');
-    if (musicPlaying) { m.pause(); b.textContent = '♪'; b.classList.remove('playing'); musicPlaying = false; }
-    else              { m.play();  b.textContent = '⏸'; b.classList.add('playing');    musicPlaying = true; }
+ let musicPlaying = false;
+function toggleMusic() {
+  const m = document.getElementById('bg-music');
+  const b = document.getElementById('music-btn');
+  
+  if (musicPlaying) { 
+    m.pause(); 
+    b.textContent = '♪'; 
+    b.classList.remove('playing'); 
+    musicPlaying = false; 
+  } else { 
+    m.play().then(() => {
+      b.textContent = '⏸'; 
+      b.classList.add('playing');    
+      musicPlaying = true; 
+    }).catch(e => console.error("Gagal play dari tombol:", e));
   }
+}
 
   // ── PETALS ───────────────────────────────────────
   function petal() {
