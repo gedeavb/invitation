@@ -316,7 +316,7 @@
     font-family:'Montserrat',sans-serif; font-size:.85rem;
     padding:.9rem 1rem; outline:none; transition:border-color .3s; -webkit-appearance:none;
   }
-  .form-input::placeholder { color:rgb(0, 0, 0); }
+  .form-input::placeholder { color:var(--gray-light); }
   .form-input:focus, .form-select:focus { border-color:rgb(0, 0, 0); }
   .form-select option { background:#000000; }
 
@@ -331,23 +331,22 @@
   .att-btn.active, .att-btn:hover { background:var(--white); color:var(--black); border-color:var(--white); }
 
   .g-recaptcha { margin:1.5rem 0; }
-  .rcnote { font-size:.58rem; color:rgb(255, 255, 255); margin-top:-.7rem; margin-bottom:1.2rem; line-height:1.6; }
-  .rcnote a { color:rgb(255, 255, 255); }
+  .rcnote { font-size:.58rem; color:var(--gray-mid); margin-top:-.7rem; margin-bottom:1.2rem; line-height:1.6; }
+  .rcnote a { color:var(--gray-dark); }
 
   .submit-btn {
-    width:100%; background:var(--white); border:1px solid var(--white);
-    color:var(--black); font-family:'Montserrat',sans-serif;
-    font-size:.68rem; letter-spacing:.46em; text-transform:uppercase;
-    padding:1.2rem; cursor:pointer; transition:all .3s;
-  }
-  .submit-btn:hover { background:transparent; color:var(--white); }
-
-  .success-msg {
-    display:none; margin-top:1rem; padding:1.5rem;
-    border:1px solid rgba(255,255,255,.22);
-    font-family:'Cormorant Garamond',serif; font-size:1.05rem;
-    color:rgba(255,255,255,.78); text-align:center;
-  }
+  width:100%; background:var(--black); border:1px solid var(--black);
+  color:var(--white); font-family:'Montserrat',sans-serif;
+  font-size:.68rem; letter-spacing:.46em; text-transform:uppercase;
+  padding:1.2rem; cursor:pointer; transition:all .3s;
+}
+  .submit-btn:hover { background:transparent; color:var(--black); }
+.success-msg {
+  display:none; margin-top:1rem; padding:1.5rem;
+  border:1px solid rgba(0,0,0,.15);
+  font-family:'Cormorant Garamond',serif; font-size:1.05rem;
+  color:var(--gray-dark); text-align:center;
+}
 
   /* ───── WISHES (light) ───── */
   #wishes { background:var(--black-70); color:var(--black); }
@@ -760,24 +759,26 @@
   }
 
   // Submit
-  function submitRSVP(e) {
-    e.preventDefault();
-    const name       = document.getElementById('name').value.trim();
-    const attendance = document.getElementById('attendance').value;
-    const guests     = document.getElementById('guests').value;
-    const message    = document.getElementById('message').value.trim();
-    if (!attendance)            { showToast('Pilih konfirmasi kehadiran terlebih dahulu'); return; }
-    if (!grecaptcha.getResponse()) { showToast('Harap selesaikan verifikasi reCAPTCHA'); return; }
-    wishes.unshift({name,attendance,guests:parseInt(guests),message,date:'Baru saja'});
-    renderWishes(); updateCounts();
-    document.getElementById('rsvp-form').reset();
-    document.querySelectorAll('.att-btn').forEach(b=>b.classList.remove('active'));
-    grecaptcha.reset();
-    const sm = document.getElementById('success-msg');
-    sm.style.display = 'block';
-    setTimeout(()=>sm.style.display='none', 5000);
-    setTimeout(()=>document.getElementById('wishes').scrollIntoView({behavior:'smooth'}), 600);
-  }
+ function submitRSVP(e) {
+  e.preventDefault();
+  const name       = document.getElementById('name').value.trim();
+  const attendance = document.getElementById('attendance').value;
+  const message    = document.getElementById('message').value.trim();
+  
+  if (!attendance) { showToast('Pilih konfirmasi kehadiran terlebih dahulu'); return; }
+  if (!grecaptcha.getResponse()) { showToast('Harap selesaikan verifikasi reCAPTCHA'); return; }
+  
+  wishes.unshift({ name, attendance, guests: 1, message, date: 'Baru saja' });
+  renderWishes(); updateCounts();
+  document.getElementById('rsvp-form').reset();
+  document.querySelectorAll('.att-btn').forEach(b => b.classList.remove('active'));
+  grecaptcha.reset();
+  
+  const sm = document.getElementById('success-msg');
+  sm.style.display = 'block';
+  setTimeout(() => sm.style.display = 'none', 5000);
+  setTimeout(() => document.getElementById('wishes').scrollIntoView({ behavior: 'smooth' }), 600);
+}
 
   function renderWishes() {
     const list = document.getElementById('wishes-list');
