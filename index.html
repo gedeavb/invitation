@@ -699,126 +699,164 @@
 <div id="toast"></div>
 
 <script>
-  // URL param
+  // ── CONFIG SUPABASE ──────────────────────────────
+  const SUPABASE_URL = 'https://XXXX.supabase.co';   // ganti
+  const SUPABASE_KEY = 'ANON_PUBLIC_KEY_KAMU';        // ganti
+
+  const headers = {
+    'Content-Type':  'application/json',
+    'apikey':        SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+  };
+
+  // ── URL PARAM ────────────────────────────────────
   const params = new URLSearchParams(window.location.search);
   document.getElementById('cover-guest').textContent = params.get('to') || 'Tamu Undangan';
 
-  // Data wishes awal
-  let wishes = [
-    { name:'Budi Santoso',    attendance:'Hadir',       guests:2, message:'Selamat menempuh hidup baru! Semoga menjadi keluarga yang sakinah, mawaddah, warahmah. Bahagia selalu 🌸', date:'2 hari yang lalu' },
-    { name:'Dewi Rahayu',     attendance:'Hadir',       guests:1, message:'Semoga pernikahan kalian dipenuhi keberkahan dan kebahagiaan yang abadi. Selamat ya Rizki & Aulia!', date:'3 hari yang lalu' },
-    { name:'Andi Firmansyah', attendance:'Tidak Hadir', guests:0, message:'Walaupun tidak bisa hadir, doa terbaik selalu menyertai kalian. Semoga menjadi pasangan yang saling mendukung selamanya.', date:'5 hari yang lalu' },
-  ];
+  // ── FETCH WISHES FROM SUPABASE ───────────────────
+  async function fetchWishes() {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/wishes?select=*&order=created_at.desc`, { headers });
+    const data = await res.json();
+    renderWishes(data);
+    updateCounts(data);
+  }
 
-  // Open
+  // ── SUBMIT RSVP TO SUPABASE ──────────────────────
+  async function submitRSVP(e) {
+    e.preventDefault();
+    const name       = document.getElementById('name').value.trim();
+    const attendance = document.getElementById('attendance').value;
+    const message    = document.getElementById('message').value.trim();
+
+    if (!attendance) { showToast('Pilih konfirmasi kehadiran terlebih dahulu'); return; }
+    if (!grecaptcha.getResponse()) { showToast('Harap selesaikan verifikasi reCAPTCHA'); return; }
+
+    const btn = document.querySelector('.submit-btn');
+    btn.textContent = 'Mengirim...';
+    btn.disabled = true;
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/wishes`, {
+      method:  'POST',
+      headers: { ...headers, 'Prefer': 'return=representation' },
+      body: JSON.stringify({ name, attendance, message }),
+    });
+
+    btn.textContent = '✦ Kirim Ucapan ✦';
+    btn.disabled = false;
+
+    if (!res.ok) { showToast('Gagal mengirim, coba lagi.'); return; }
+
+    document.getElementById('rsvp-form').reset();
+    document.querySelectorAll('.att-btn').forEach(b => b.classList.remove('active'));
+    grecaptcha.reset();
+
+    const sm = document.getElementById('success-msg');
+    sm.style.display = 'block';
+    setTimeout(() => sm.style.display = 'none', 5000);
+
+    await fetchWishes(); // refresh list
+    setTimeout(() => document.getElementById('wishes').scrollIntoView({ behavior: 'smooth' }), 600);
+  }
+
+  // ── RENDER ───────────────────────────────────────
+  function renderWishes(data) {
+    const list = document.getElementById('wishes-list');
+    list.innerHTML = '';
+    if (!data.length) {
+      list.innerHTML = '<p style="color:rgba(255,255,255,.4);text-align:center;font-family:Cormorant Garamond,serif">Belum ada ucapan. Jadilah yang pertama! 🌸</p>';
+      return;
+    }
+    data.forEach(w => {
+      const ico  = w.attendance === 'Hadir' ? '✓' : w.attendance === 'Tidak Hadir' ? '✗' : '?';
+      const time = new Date(w.created_at).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+      list.innerHTML += `<div class="wish-card">
+        <p class="wish-name">${esc(w.name)}</p>
+        <p class="wish-attendance">${ico} ${esc(w.attendance)}</p>
+        <p class="wish-text">${esc(w.message)}</p>
+        <p class="wish-date">${time}</p>
+      </div>`;
+    });
+  }
+
+  function updateCounts(data) {
+    document.getElementById('count-hadir').textContent   = data.filter(w => w.attendance === 'Hadir').length;
+    document.getElementById('count-tidak').textContent   = data.filter(w => w.attendance === 'Tidak Hadir').length;
+    document.getElementById('count-mungkin').textContent = data.filter(w => w.attendance === 'Mungkin').length;
+  }
+
+  // ── OPEN INVITATION ──────────────────────────────
   function openInvitation() {
     document.getElementById('cover').classList.add('hidden');
     document.getElementById('main').classList.add('visible');
     const m = document.getElementById('bg-music');
     m.volume = .35;
-    m.play().then(() => { document.getElementById('music-btn').classList.add('playing'); musicPlaying = true; }).catch(()=>{});
+    m.play().then(() => { document.getElementById('music-btn').classList.add('playing'); musicPlaying = true; }).catch(() => {});
     setTimeout(revealAll, 300);
-    renderWishes(); updateCounts();
+    fetchWishes();
   }
 
-  // Countdown
-  const wedding = new Date('2025-06-28T08:00:00');
+  // ── COUNTDOWN ────────────────────────────────────
+  const wedding = new Date('2026-04-15T10:00:00');
   function tick() {
     const d = wedding - new Date();
-    if (d <= 0) { ['cd-days','cd-hours','cd-mins','cd-secs'].forEach(id=>document.getElementById(id).textContent='00'); return; }
-    document.getElementById('cd-days').textContent  = String(Math.floor(d/86400000)).padStart(2,'0');
-    document.getElementById('cd-hours').textContent = String(Math.floor(d%86400000/3600000)).padStart(2,'0');
-    document.getElementById('cd-mins').textContent  = String(Math.floor(d%3600000/60000)).padStart(2,'0');
-    document.getElementById('cd-secs').textContent  = String(Math.floor(d%60000/1000)).padStart(2,'0');
+    if (d <= 0) {
+      ['cd-days','cd-hours','cd-mins','cd-secs'].forEach(id => document.getElementById(id).textContent = '00');
+      return;
+    }
+    document.getElementById('cd-days').textContent  = String(Math.floor(d / 86400000)).padStart(2, '0');
+    document.getElementById('cd-hours').textContent = String(Math.floor(d % 86400000 / 3600000)).padStart(2, '0');
+    document.getElementById('cd-mins').textContent  = String(Math.floor(d % 3600000 / 60000)).padStart(2, '0');
+    document.getElementById('cd-secs').textContent  = String(Math.floor(d % 60000 / 1000)).padStart(2, '0');
   }
-  setInterval(tick,1000); tick();
+  setInterval(tick, 1000); tick();
 
-  // Music
+  // ── MUSIC ────────────────────────────────────────
   let musicPlaying = false;
   function toggleMusic() {
     const m = document.getElementById('bg-music'), b = document.getElementById('music-btn');
-    if (musicPlaying) { m.pause(); b.textContent='♪'; b.classList.remove('playing'); musicPlaying=false; }
-    else              { m.play();  b.textContent='⏸'; b.classList.add('playing');    musicPlaying=true; }
+    if (musicPlaying) { m.pause(); b.textContent = '♪'; b.classList.remove('playing'); musicPlaying = false; }
+    else              { m.play();  b.textContent = '⏸'; b.classList.add('playing');    musicPlaying = true; }
   }
 
-  // Falling dots
+  // ── PETALS ───────────────────────────────────────
   function petal() {
-    const p = document.createElement('div'); p.className='petal';
-    const s = Math.random()*5+3;
-    p.style.cssText=`left:${Math.random()*100}vw;width:${s}px;height:${s}px;animation-duration:${Math.random()*10+8}s;animation-delay:${Math.random()*4}s`;
+    const p = document.createElement('div'); p.className = 'petal';
+    const s = Math.random() * 5 + 3;
+    p.style.cssText = `left:${Math.random()*100}vw;width:${s}px;height:${s}px;animation-duration:${Math.random()*10+8}s;animation-delay:${Math.random()*4}s`;
     document.getElementById('hero').appendChild(p);
-    setTimeout(()=>p.remove(),20000);
+    setTimeout(() => p.remove(), 20000);
   }
-  setInterval(petal,1200);
+  setInterval(petal, 1200);
 
-  // Attendance
-  function setAttendance(val,btn) {
+  // ── HELPERS ──────────────────────────────────────
+  function setAttendance(val, btn) {
     document.getElementById('attendance').value = val;
-    document.querySelectorAll('.att-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.att-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
   }
 
-  // Submit
- function submitRSVP(e) {
-  e.preventDefault();
-  const name       = document.getElementById('name').value.trim();
-  const attendance = document.getElementById('attendance').value;
-  const message    = document.getElementById('message').value.trim();
-  
-  if (!attendance) { showToast('Pilih konfirmasi kehadiran terlebih dahulu'); return; }
-  if (!grecaptcha.getResponse()) { showToast('Harap selesaikan verifikasi reCAPTCHA'); return; }
-  
-  wishes.unshift({ name, attendance, guests: 1, message, date: 'Baru saja' });
-  renderWishes(); updateCounts();
-  document.getElementById('rsvp-form').reset();
-  document.querySelectorAll('.att-btn').forEach(b => b.classList.remove('active'));
-  grecaptcha.reset();
-  
-  const sm = document.getElementById('success-msg');
-  sm.style.display = 'block';
-  setTimeout(() => sm.style.display = 'none', 5000);
-  setTimeout(() => document.getElementById('wishes').scrollIntoView({ behavior: 'smooth' }), 600);
-}
-
-  function renderWishes() {
-    const list = document.getElementById('wishes-list');
-    list.innerHTML = '';
-    wishes.forEach(w => {
-      const ico = w.attendance==='Hadir'?'✓':w.attendance==='Tidak Hadir'?'✗':'?';
-      const gt  = w.attendance==='Hadir'?` · ${w.guests} Orang`:'';
-      list.innerHTML += `<div class="wish-card">
-        <p class="wish-name">${esc(w.name)}</p>
-        <p class="wish-attendance">${ico} ${esc(w.attendance)}${gt}</p>
-        <p class="wish-text">${esc(w.message)}</p>
-        <p class="wish-date">${w.date}</p>
-      </div>`;
-    });
+  function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  function updateCounts() {
-    document.getElementById('count-hadir').textContent   = wishes.filter(w=>w.attendance==='Hadir').length;
-    document.getElementById('count-tidak').textContent   = wishes.filter(w=>w.attendance==='Tidak Hadir').length;
-    document.getElementById('count-mungkin').textContent = wishes.filter(w=>w.attendance==='Mungkin').length;
-  }
-
-  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-  function copyText(text,btn) {
-    navigator.clipboard.writeText(text).then(()=>{
-      const o=btn.textContent; btn.textContent='✓ Tersalin'; btn.classList.add('copied');
-      setTimeout(()=>{btn.textContent=o;btn.classList.remove('copied');},2000);
+  function copyText(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      const o = btn.textContent; btn.textContent = '✓ Tersalin'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = o; btn.classList.remove('copied'); }, 2000);
     });
     showToast('Nomor rekening berhasil disalin!');
   }
 
-  function showToast(msg){
-    const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
-    setTimeout(()=>t.classList.remove('show'),3000);
+  function showToast(msg) {
+    const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
   }
 
-  function revealAll(){
-    const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('active');}),{threshold:.1});
-    document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+  function revealAll() {
+    const obs = new IntersectionObserver(entries => entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('active');
+    }), { threshold: .1 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
   }
 </script>
 </body>
