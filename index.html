@@ -749,7 +749,7 @@
       body: JSON.stringify({ name, attendance, message }),
     });
 
-    btn.textContent = '✦ Kirim Ucapan ✦';
+    btn.textContent = '✦ Kirim Ucapan ✦':
     btn.disabled = false;
 
     if (!res.ok) { showToast('Gagal mengirim, coba lagi.'); return; }
