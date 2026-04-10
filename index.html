@@ -209,6 +209,17 @@
   object-fit: cover;
   object-position: top; /* agar wajah tidak terpotong */
 }
+
+  .ig-link {
+  color: var(--gray-mid);
+  text-decoration: none;
+  transition: color .3s;
+  display: inline-flex;
+  align-items: center;
+}
+.ig-link:hover {
+  color: var(--black);
+}
   .person-photo::after {
     content:''; position:absolute; inset:7px;
     border:1px solid rgba(0,0,0,0.07);
